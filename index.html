@@ -189,13 +189,38 @@ to{opacity:1;}
 <body>
     <div class="cursor"></div>
 
-<button id="musicBtn">
-🎵 Music ON
+<!-- Tombol Musik -->
 <button id="musicBtn">🎵 OFF</button>
 
+<!-- Audio -->
 <audio id="bgMusic" loop>
-<source src="music/music.mp3.mp3" type="audio/mpeg">
+    <source src="music/music.mp3" type="audio/mpeg">
+    Browser Anda tidak mendukung audio.
 </audio>
+
+<script>
+const music = document.getElementById("bgMusic");
+const musicBtn = document.getElementById("musicBtn");
+
+let isPlaying = false;
+
+musicBtn.addEventListener("click", function(){
+
+    if(isPlaying){
+        music.pause();
+        music.currentTime = 0;
+        musicBtn.innerHTML = "🎵 OFF";
+        musicBtn.style.background = "#00c853";
+        isPlaying = false;
+    }else{
+        music.play();
+        musicBtn.innerHTML = "🔊 ON";
+        musicBtn.style.background = "#ff3c00";
+        isPlaying = true;
+    }
+
+});
+</script>
 
 <!-- SLIDE 1 -->
 <div class="slide active">
