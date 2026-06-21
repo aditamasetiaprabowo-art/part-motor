@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Motor Parts Racing</title>
+
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:Arial,sans-serif;
+}
+
+body{
+    background:#000;
+    color:#fff;
+    overflow-x:hidden;
+}
+
+/* Cursor */
+.cursor{
+    width:20px;
+    height:20px;
+    border:2px solid red;
+    border-radius:50%;
+    position:fixed;
+    pointer-events:none;
+    transform:translate(-50%,-50%);
+    box-shadow:0 0 20px red;
+    z-index:9999;
+}
+
+/* Navbar */
+nav{
+    background:#111;
+    padding:15px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+}
+
+.logo{
+    color:red;
+    font-size:28px;
+    font-weight:bold;
+}
+
+.music-btn{
+    background:red;
+    border:none;
+    padding:10px 20px;
+    color:#fff;
+    border-radius:5px;
+    cursor:pointer;
+}
+
+/* Hero */
+.hero{
+    text-align:center;
+    padding:50px 20px;
+}
+
+.hero h1{
+    font-size:50px;
+    color:red;
+    animation:glow 2s infinite;
+}
+
+@keyframes glow{
+    0%{text-shadow:0 0 5px red;}
+    50%{text-shadow:0 0 25px red;}
+    100%{text-shadow:0 0 5px red;}
+}
+
+.hero p{
+    margin-top:10px;
+    font-size:20px;
+}
+
+/* Running Text */
+.running{
+    background:red;
+    color:white;
+    padding:10px;
+    font-weight:bold;
+}
+
+/* Slider */
+.slider{
+    width:90%;
+    height:500px;
+    margin:30px auto;
+    overflow:hidden;
+    border-radius:15px;
+    box-shadow:0 0 25px red;
+}
+
+.slides{
+    display:flex;
+    width:600%;
+    animation:slide 24s infinite;
+}
+
+.slides img{
+    width:100%;
+    height:500px;
+    object-fit:cover;
+}
+
+@keyframes slide{
+    0%{transform:translateX(0);}
+    16%{transform:translateX(0);}
+    20%{transform:translateX(-100%);}
+    36%{transform:translateX(-100%);}
+    40%{transform:translateX(-200%);}
+    56%{transform:translateX(-200%);}
+    60%{transform:translateX(-300%);}
+    76%{transform:translateX(-300%);}
+    80%{transform:translateX(-400%);}
+    96%{transform:translateX(-400%);}
+    100%{transform:translateX(-500%);}
+}
+
+/* Produk */
+.products{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
+    gap:20px;
+    padding:30px;
+}
+
+.card{
+    background:#111;
+    border:1px solid red;
+    border-radius:10px;
+    overflow:hidden;
+    transition:0.3s;
+}
+
+.card:hover{
+    transform:translateY(-10px);
+    box-shadow:0 0 20px red;
+}
+
+.card img{
+    width:100%;
+    height:200px;
+    object-fit:cover;
+}
+
+.card h3{
+    padding:15px;
+    color:red;
+}
+
+.card p{
+    padding:0 15px 15px;
+}
+
+/* Footer */
+footer{
+    background:#111;
+    text-align:center;
+    padding:20px;
+    margin-top:30px;
+}
+</style>
+</head>
+<body>
+
+<div class="cursor"></div>
+
+<nav>
+<div class="logo">MOTOR PARTS RACING</div>
+
+<button class="music-btn" onclick="toggleMusic()">
+🎵 ON / OFF
+</button>
+</nav>
+
+<div class="running">
+<marquee>
+🔥 Selamat Datang Di Motor Parts Racing • Knalpot Racing • Velg Racing • Shock Premium • Diskon Besar Hari Ini 🔥
+</marquee>
+</div>
+
+<section class="hero">
+<h1>MOTOR PARTS PREMIUM</h1>
+<p>Upgrade Motor Anda Menjadi Lebih Kencang Dan Stylish</p>
+</section>
+
+<div class="slider">
+<div class="slides">
+
+<img src="https://images.unsplash.com/photo-1558981806-ec527fa84c39?w=1200" alt="">
+<img src="https://images.unsplash.com/photo-1517846693594-1567da72af75?w=1200" alt="">
+<img src="https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=1200" alt="">
+<img src="https://images.unsplash.com/photo-1558980664-10ea6b89e8b4?w=1200" alt="">
+<img src="https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?w=1200" alt="">
+<img src="https://images.unsplash.com/photo-1541899481282-d53bffe3c35d?w=1200" alt="">
+
+</div>
+</div>
+
+<section class="products">
+
+<div class="card">
+<img src="https://images.unsplash.com/photo-1558981806-ec527fa84c39?w=800">
+<h3>Knalpot Racing</h3>
+<p>Suara gahar dan performa maksimal.</p>
+</div>
+
+<div class="card">
+<img src="https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=800">
+<h3>Velg Racing</h3>
+<p>Tampilan lebih sporty dan ringan.</p>
+</div>
+
+<div class="card">
+<img src="https://images.unsplash.com/photo-1558980664-10ea6b89e8b4?w=800">
+<h3>Shock Premium</h3>
+<p>Nyaman untuk harian maupun balap.</p>
+</div>
+
+</section>
+
+<footer>
+© 2026 Motor Parts Racing
+</footer>
+
+<audio id="bgmusic" loop>
+<source src="music.mp3" type="audio/mpeg">
+</audio>
+
+<script>
+// Cursor Effect
+const cursor=document.querySelector(".cursor");
+
+document.addEventListener("mousemove",(e)=>{
+cursor.style.left=e.clientX+"px";
+cursor.style.top=e.clientY+"px";
+});
+
+// Music
+const music=document.getElementById("bgmusic");
+let playing=false;
+
+function toggleMusic(){
+if(!playing){
+music.play();
+playing=true;
+}else{
+music.pause();
+playing=false;
+}
+}
+</script>
+
+</body>
+</html>
