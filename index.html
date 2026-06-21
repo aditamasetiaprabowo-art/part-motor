@@ -3,260 +3,376 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Motor Parts Racing</title>
+<title>Motor Parts Garage</title>
+
+<link rel="stylesheet" href="style.css">
+
+<link href="https://unpkg.com/aos@2.3.4/dist/aos.css" rel="stylesheet">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&display=swap" rel="stylesheet">
+
+<link rel="stylesheet"
+href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
 
 <style>
+
 *{
-    margin:0;
-    padding:0;
-    box-sizing:border-box;
-    font-family:Arial,sans-serif;
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:Poppins,sans-serif;
+scroll-behavior:smooth;
 }
 
 body{
-    background:#000;
-    color:#fff;
-    overflow-x:hidden;
+background:#000;
+color:#fff;
+overflow-x:hidden;
 }
 
-/* Cursor */
-.cursor{
-    width:20px;
-    height:20px;
-    border:2px solid red;
-    border-radius:50%;
-    position:fixed;
-    pointer-events:none;
-    transform:translate(-50%,-50%);
-    box-shadow:0 0 20px red;
-    z-index:9999;
+video{
+position:fixed;
+top:0;
+left:0;
+width:100%;
+height:100%;
+object-fit:cover;
+z-index:-3;
 }
 
-/* Navbar */
-nav{
-    background:#111;
-    padding:15px;
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
+.overlay{
+position:fixed;
+top:0;
+left:0;
+width:100%;
+height:100%;
+background:rgba(0,0,0,.7);
+z-index:-2;
+}
+
+.loader{
+position:fixed;
+width:100%;
+height:100%;
+background:#000;
+display:flex;
+justify-content:center;
+align-items:center;
+font-size:40px;
+font-weight:bold;
+z-index:9999;
+animation:hide 3s forwards;
+}
+
+@keyframes hide{
+90%{opacity:1;}
+100%{
+opacity:0;
+visibility:hidden;
+}
+}
+
+header{
+
+position:fixed;
+top:0;
+left:0;
+width:100%;
+padding:20px 80px;
+
+display:flex;
+justify-content:space-between;
+align-items:center;
+
+background:rgba(0,0,0,.5);
+backdrop-filter:blur(15px);
+
+z-index:999;
+
 }
 
 .logo{
-    color:red;
-    font-size:28px;
-    font-weight:bold;
+
+font-size:32px;
+font-weight:bold;
+color:red;
+
 }
 
-.music-btn{
-    background:red;
-    border:none;
-    padding:10px 20px;
-    color:#fff;
-    border-radius:5px;
-    cursor:pointer;
+nav a{
+
+color:white;
+text-decoration:none;
+margin-left:30px;
+transition:.3s;
+
 }
 
-/* Hero */
+nav a:hover{
+
+color:red;
+
+}
+
 .hero{
-    text-align:center;
-    padding:50px 20px;
+
+height:100vh;
+
+display:flex;
+
+justify-content:center;
+
+align-items:center;
+
+text-align:center;
+
+padding:30px;
+
 }
 
 .hero h1{
-    font-size:50px;
-    color:red;
-    animation:glow 2s infinite;
-}
 
-@keyframes glow{
-    0%{text-shadow:0 0 5px red;}
-    50%{text-shadow:0 0 25px red;}
-    100%{text-shadow:0 0 5px red;}
+font-size:65px;
+
+text-shadow:0 0 20px red;
+
 }
 
 .hero p{
-    margin-top:10px;
-    font-size:20px;
+
+margin:20px auto;
+
+max-width:700px;
+
 }
 
-/* Running Text */
-.running{
-    background:red;
-    color:white;
-    padding:10px;
-    font-weight:bold;
+.btn{
+
+display:inline-block;
+
+padding:15px 40px;
+
+background:red;
+
+color:white;
+
+text-decoration:none;
+
+border-radius:40px;
+
+transition:.3s;
+
 }
 
-/* Slider */
+.btn:hover{
+
+background:white;
+
+color:black;
+
+transform:scale(1.1);
+
+}
+
 .slider{
-    width:90%;
-    height:500px;
-    margin:30px auto;
-    overflow:hidden;
-    border-radius:15px;
-    box-shadow:0 0 25px red;
+
+position:relative;
+
+height:100vh;
+
+overflow:hidden;
+
 }
 
-.slides{
-    display:flex;
-    width:600%;
-    animation:slide 24s infinite;
+.slide{
+
+position:absolute;
+
+width:100%;
+
+height:100%;
+
+opacity:0;
+
+transition:1s;
+
 }
 
-.slides img{
-    width:100%;
-    height:500px;
-    object-fit:cover;
+.slide img{
+
+width:100%;
+
+height:100%;
+
+object-fit:cover;
+
 }
 
-@keyframes slide{
-    0%{transform:translateX(0);}
-    16%{transform:translateX(0);}
-    20%{transform:translateX(-100%);}
-    36%{transform:translateX(-100%);}
-    40%{transform:translateX(-200%);}
-    56%{transform:translateX(-200%);}
-    60%{transform:translateX(-300%);}
-    76%{transform:translateX(-300%);}
-    80%{transform:translateX(-400%);}
-    96%{transform:translateX(-400%);}
-    100%{transform:translateX(-500%);}
+.slide.active{
+
+opacity:1;
+
 }
 
-/* Produk */
-.products{
-    display:grid;
-    grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
-    gap:20px;
-    padding:30px;
+.arrow{
+
+position:absolute;
+
+top:50%;
+
+transform:translateY(-50%);
+
+font-size:50px;
+
+color:white;
+
+padding:20px;
+
+cursor:pointer;
+
+z-index:5;
+
 }
 
-.card{
-    background:#111;
-    border:1px solid red;
-    border-radius:10px;
-    overflow:hidden;
-    transition:0.3s;
+.left{
+
+left:20px;
+
 }
 
-.card:hover{
-    transform:translateY(-10px);
-    box-shadow:0 0 20px red;
+.right{
+
+right:20px;
+
 }
 
-.card img{
-    width:100%;
-    height:200px;
-    object-fit:cover;
+.music{
+
+position:fixed;
+
+bottom:20px;
+
+left:20px;
+
+background:red;
+
+width:60px;
+
+height:60px;
+
+border-radius:50%;
+
+display:flex;
+
+justify-content:center;
+
+align-items:center;
+
+cursor:pointer;
+
+z-index:999;
+
 }
 
-.card h3{
-    padding:15px;
-    color:red;
+.whatsapp{
+
+position:fixed;
+
+bottom:20px;
+
+right:20px;
+
+background:#25D366;
+
+width:70px;
+
+height:70px;
+
+border-radius:50%;
+
+display:flex;
+
+justify-content:center;
+
+align-items:center;
+
+font-size:35px;
+
+color:white;
+
+text-decoration:none;
+
+z-index:999;
+
 }
 
-.card p{
-    padding:0 15px 15px;
-}
-
-/* Footer */
-footer{
-    background:#111;
-    text-align:center;
-    padding:20px;
-    margin-top:30px;
-}
 </style>
+
 </head>
+
 <body>
 
-<div class="cursor"></div>
+<div class="loader">
+LOADING...
+</div>
+
+<video autoplay muted loop>
+
+<source src="video.mp4" type="video/mp4">
+
+</video>
+
+<div class="overlay"></div>
+
+<header>
+
+<div class="logo">
+
+MOTOR PARTS
+
+</div>
 
 <nav>
-<div class="logo">MOTOR PARTS RACING</div>
 
-<button class="music-btn" onclick="toggleMusic()">
-🎵 ON / OFF
-</button>
+<a href="#">Home</a>
+
+<a href="produk.html">Produk</a>
+
+<a href="promo.html">Promo</a>
+
+<a href="galeri.html">Galeri</a>
+
+<a href="tentang.html">Tentang</a>
+
+<a href="kontak.html">Kontak</a>
+
 </nav>
 
-<div class="running">
-<marquee>
-🔥 Selamat Datang Di Motor Parts Racing • Knalpot Racing • Velg Racing • Shock Premium • Diskon Besar Hari Ini 🔥
-</marquee>
-</div>
+</header>
 
 <section class="hero">
-<h1>MOTOR PARTS PREMIUM</h1>
-<p>Upgrade Motor Anda Menjadi Lebih Kencang Dan Stylish</p>
-</section>
 
-<div class="slider">
-<div class="slides">
+<div>
 
-<img src="https://images.unsplash.com/photo-1558981806-ec527fa84c39?w=1200" alt="">
-<img src="https://images.unsplash.com/photo-1517846693594-1567da72af75?w=1200" alt="">
-<img src="https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=1200" alt="">
-<img src="https://images.unsplash.com/photo-1558980664-10ea6b89e8b4?w=1200" alt="">
-<img src="https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?w=1200" alt="">
-<img src="https://images.unsplash.com/photo-1541899481282-d53bffe3c35d?w=1200" alt="">
+<h1 data-aos="zoom-in">
 
-</div>
-</div>
+MOTOR PARTS GARAGE
 
-<section class="products">
+</h1>
 
-<div class="card">
-<img src="https://images.unsplash.com/photo-1558981806-ec527fa84c39?w=800">
-<h3>Knalpot Racing</h3>
-<p>Suara gahar dan performa maksimal.</p>
-</div>
+<p data-aos="fade-up">
 
-<div class="card">
-<img src="https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=800">
-<h3>Velg Racing</h3>
-<p>Tampilan lebih sporty dan ringan.</p>
-</div>
+Pusat Part Racing Terlengkap dan Termurah
 
-<div class="card">
-<img src="https://images.unsplash.com/photo-1558980664-10ea6b89e8b4?w=800">
-<h3>Shock Premium</h3>
-<p>Nyaman untuk harian maupun balap.</p>
+</p>
+
+<a class="btn" href="produk.html">
+
+BELANJA SEKARANG
+
+</a>
+
 </div>
 
 </section>
-
-<footer>
-© 2026 Motor Parts Racing
-</footer>
-
-<audio id="bgmusic" loop>
-<source src="music.mp3" type="audio/mpeg">
-</audio>
-
-<script>
-// Cursor Effect
-const cursor=document.querySelector(".cursor");
-
-document.addEventListener("mousemove",(e)=>{
-cursor.style.left=e.clientX+"px";
-cursor.style.top=e.clientY+"px";
-});
-
-// Music
-const music=document.getElementById("bgmusic");
-let playing=false;
-
-function toggleMusic(){
-if(!playing){
-music.play();
-playing=true;
-}else{
-music.pause();
-playing=false;
-}
-}
-</script>
-
-</body>
-</html>
