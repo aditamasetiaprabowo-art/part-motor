@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Motor Parts Garage</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:Arial,Helvetica,sans-serif;}
+
+body{
+  background:linear-gradient(135deg,#0f0f0f,#232526,#414345);
+  color:#fff;
+  overflow:hidden;
+  cursor:none;
+}
+
+/* ===== CANVAS PARTIKEL ===== */
+#particleCanvas{
+  position:fixed;
+  top:0;left:0;
+  width:100%;height:100%;
+  z-index:0;
+  pointer-events:none;
+}
+
+/* ===== CURSOR UTAMA ===== */
+#cursor{
+  position:fixed;
+  width:16px;height:16px;
+  border-radius:50%;
+  background:#ff3c00;
+  box-shadow:0 0 12px #ff3c00,0 0 30px #ff3c0080;
+  pointer-events:none;
+  transform:translate(-50%,-50%);
+  z-index:9999;
+  transition:transform .08s ease, width .2s, height .2s;
+}
+#cursorRing{
+  position:fixed;
+  width:36px;height:36px;
+  border-radius:50%;
+  border:1.5px solid #ff3c0099;
+  pointer-events:none;
+  transform:translate(-50%,-50%);
+  z-index:9998;
+  transition:transform .18s ease, width .2s, height .2s, border-color .2s;
+}
+body:has(a:hover) #cursor,
+body:has(button:hover) #cursor{width:24px;height:24px;background:#00d4ff;box-shadow:0 0 20px #00d4ff;}
+body:has(a:hover) #cursorRing,
+body:has(button:hover) #cursorRing{width:50px;height:50px;border-color:#00d4ff99;}
+
+/* ===== EKOR KURSOR (trail) ===== */
+.trail{
+  position:fixed;
+  border-radius:50%;
+  pointer-events:none;
+  transform:translate(-50%,-50%);
+  z-index:9997;
+  background:#ff3c00;
+  opacity:.4;
+}
+
+/* ===== SPARK KLIK ===== */
+.spark{
+  position:fixed;
+  pointer-events:none;
+  z-index:9990;
+  border-radius:50%;
+  animation:sparkAnim .5s ease-out forwards;
+}
+@keyframes sparkAnim{
+  0%{transform:translate(-50%,-50%) scale(1);opacity:1;}
+  100%{transform:translate(-50%,-50%) scale(0);opacity:0;}
+}
+
+/* ===== BACKGROUND DOT GRID ===== */
+body::before{
+  content:"";
+  position:fixed;
+  inset:0;
+  background:radial-gradient(circle,#ff3c0022 1.5px,transparent 1.5px);
+  background-size:50px 50px;
+  animation:bgDrift 15s linear infinite;
+  z-index:0;
+}
+@keyframes bgDrift{
+  from{background-position:0 0;}
+  to{background-position:200px 200px;}
+}
+
+/* ===== SLIDES ===== */
+.slide{
+  display:none;
+  position:relative;
+  z-index:1;
+  width:100%;height:100vh;
+  padding:40px;
+  text-align:center;
+  animation:fadeIn .8s ease;
+}
+.slide.active{display:block;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:translateY(0);}}
+
+/* ===== TYPOGRAPHY ===== */
+h1{
+  margin-top:80px;
+  font-size:55px;
+  color:#ff3c00;
+  text-shadow:0 0 20px #ff3c00,0 0 60px #ff3c0066;
+  position:relative;
+  display:inline-block;
+}
+/* Glitch overlay */
+h1.glitch::before,h1.glitch::after{
+  content:attr(data-text);
+  position:absolute;
+  left:0;top:0;
+  width:100%;
+  color:#ff3c00;
+}
+h1.glitch::before{
+  animation:glitch1 2.5s infinite;
+  color:#00d4ff;
+  clip-path:polygon(0 20%,100% 20%,100% 40%,0 40%);
+}
+h1.glitch::after{
+  animation:glitch2 2.5s infinite;
+  color:#ff0066;
+  clip-path:polygon(0 60%,100% 60%,100% 80%,0 80%);
+}
+@keyframes glitch1{
+  0%,94%{transform:none;opacity:0;}
+  95%{transform:skewX(-5deg) translateX(-4px);opacity:.8;}
+  97%{transform:skewX(5deg) translateX(4px);opacity:.8;}
+  99%{transform:none;opacity:0;}
+}
+@keyframes glitch2{
+  0%,90%{transform:none;opacity:0;}
+  91%{transform:skewX(4deg) translateX(5px);opacity:.8;}
+  93%{transform:skewX(-4deg) translateX(-5px);opacity:.8;}
+  95%{transform:none;opacity:0;}
+}
+
+h2{
+  margin-bottom:30px;
+  font-size:38px;
+  color:#00d4ff;
+  text-shadow:0 0 15px #00d4ff88;
+}
+p{font-size:20px;margin-top:15px;line-height:1.8;}
+
+/* ===== FLOATING TAGS SLIDE 1 ===== */
+.floating-tags{
+  margin-top:30px;
+  display:flex;
+  justify-content:center;
+  flex-wrap:wrap;
+  gap:12px;
+}
+.ftag{
+  padding:8px 20px;
+  border:1.5px solid #ff3c0088;
+  border-radius:30px;
+  font-size:14px;
+  color:#ff3c00;
+  animation:floatTag 3s ease-in-out infinite;
+  background:rgba(255,60,0,.08);
+}
+.ftag:nth-child(2){animation-delay:.4s;}
+.ftag:nth-child(3){animation-delay:.8s;}
+.ftag:nth-child(4){animation-delay:1.2s;}
+.ftag:nth-child(5){animation-delay:1.6s;}
+@keyframes floatTag{
+  0%,100%{transform:translateY(0);}
+  50%{transform:translateY(-8px);}
+}
+
+/* ===== GALLERY / CARDS ===== */
+.gallery{display:flex;justify-content:center;flex-wrap:wrap;gap:30px;}
+
+.card{
+  background:rgba(255,255,255,.07);
+  border:1px solid rgba(0,212,255,.15);
+  border-radius:15px;
+  padding:15px;
+  transition:.4s;
+  position:relative;
+  overflow:hidden;
+}
+.card::before{
+  content:"";
+  position:absolute;
+  inset:-2px;
+  border-radius:15px;
+  background:linear-gradient(45deg,#ff3c0000,#00d4ff44,#ff3c0000);
+  opacity:0;
+  transition:.4s;
+}
+.card:hover::before{opacity:1;animation:cardShine 1.5s linear infinite;}
+@keyframes cardShine{
+  0%{background-position:0% 50%;}
+  100%{background-position:200% 50%;}
+}
+.card:hover{
+  transform:translateY(-12px) scale(1.03);
+  box-shadow:0 0 30px #00d4ff66, 0 0 60px #ff3c0033;
+  border-color:#00d4ff88;
+}
+.card img{width:220px;height:220px;object-fit:cover;border-radius:12px;display:block;}
+.card p{margin-top:10px;font-weight:bold;color:#00d4ff;}
+
+/* ===== INFO SLIDE ICONS ===== */
+.info-list{
+  list-style:none;
+  display:inline-block;
+  text-align:left;
+  margin-top:10px;
+}
+.info-list li{
+  font-size:18px;
+  padding:8px 0;
+  border-bottom:1px solid rgba(255,255,255,.1);
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+.info-list li span.dot{
+  width:10px;height:10px;
+  border-radius:50%;
+  background:#00d4ff;
+  box-shadow:0 0 10px #00d4ff;
+  flex-shrink:0;
+}
+
+/* ===== IFRAME VIDEO ===== */
+iframe{
+  width:80%;height:430px;
+  border:none;
+  border-radius:15px;
+  box-shadow:0 0 30px #00d4ff88;
+  animation:iframePulse 3s ease-in-out infinite;
+}
+@keyframes iframePulse{
+  0%,100%{box-shadow:0 0 20px #00d4ff66;}
+  50%{box-shadow:0 0 50px #00d4ffaa,0 0 80px #ff3c0033;}
+}
+
+/* ===== NAVIGASI BUTTONS ===== */
+.nav-btn{
+  position:fixed;
+  bottom:20px;
+  padding:13px 28px;
+  border:none;
+  border-radius:30px;
+  background:#ff3c00;
+  color:#fff;
+  font-size:18px;
+  cursor:none;
+  transition:.3s;
+  z-index:100;
+  box-shadow:0 0 20px #ff3c0066;
+  letter-spacing:1px;
+}
+.nav-btn:hover{
+  background:#ff6a00;
+  box-shadow:0 0 35px #ff6a0099;
+  transform:scale(1.07);
+}
+#prev{left:20px;}
+#next{right:20px;}
+
+/* ===== TOMBOL MUSIK ===== */
+#musicBtn{
+  position:fixed;
+  left:50%;bottom:20px;
+  transform:translateX(-50%);
+  padding:12px 30px;
+  background:#00c853;
+  color:#fff;
+  border:none;
+  border-radius:30px;
+  font-size:16px;
+  font-weight:bold;
+  cursor:none;
+  box-shadow:0 0 15px #00c85388;
+  z-index:999;
+  transition:.3s;
+}
+#musicBtn:hover{background:#00e676;box-shadow:0 0 30px #00e67699;}
+
+/* ===== SLIDE COUNTER ===== */
+#slideCounter{
+  position:fixed;
+  top:20px;right:25px;
+  z-index:200;
+  font-size:14px;
+  color:rgba(255,255,255,.5);
+  letter-spacing:2px;
+}
+
+/* ===== SCAN LINE OVERLAY ===== */
+body::after{
+  content:"";
+  position:fixed;
+  inset:0;
+  background:repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 3px,
+    rgba(0,0,0,.07) 3px,
+    rgba(0,0,0,.07) 4px
+  );
+  pointer-events:none;
+  z-index:5000;
+}
+
+/* ===== NEON BORDER SLIDE ===== */
+.slide.active{
+  animation:fadeIn .8s ease;
+}
+
+/* ===== THANK YOU SLIDE ===== */
+.thankyou-glow{
+  font-size:55px;
+  color:#00d4ff;
+  text-shadow:0 0 20px #00d4ff,0 0 60px #00d4ff66;
+  margin-top:80px;
+  animation:tyglow 2s ease-in-out infinite;
+}
+@keyframes tyglow{
+  0%,100%{text-shadow:0 0 20px #00d4ff,0 0 60px #00d4ff66;}
+  50%{text-shadow:0 0 40px #00d4ff,0 0 100px #00d4ffaa,0 0 150px #00d4ff44;}
+}
+
+/* ===== SCROLLBAR ===== */
+::-webkit-scrollbar{width:4px;}
+::-webkit-scrollbar-track{background:#111;}
+::-webkit-scrollbar-thumb{background:#ff3c00;border-radius:4px;}
+</style>
+</head>
+<body>
+
+<!-- CANVAS PARTIKEL -->
+<canvas id="particleCanvas"></canvas>
+
+<!-- CURSOR -->
+<div id="cursor"></div>
+<div id="cursorRing"></div>
+
+<!-- SLIDE COUNTER -->
+<div id="slideCounter">01 / 06</div>
+
+<!-- MUSIK -->
+<button id="musicBtn">🎵 OFF</button>
+<audio id="bgMusic" loop>
+  <source src="music/music.mp3.mp3" type="audio/mpeg">
+</audio>
+
+<!-- ===== SLIDE 1 ===== -->
+<div class="slide active">
+  <h1 class="glitch" data-text="🏍️ Motor Parts Garage">🏍️ Motor Parts Garage</h1>
+  <p style="color:#aaa;margin-top:20px;font-size:22px;">Welcome To The World Of Motorcycle Parts</p>
+  <div class="floating-tags">
+    <div class="ftag">⚡ Upgrade Performance</div>
+    <div class="ftag">🏁 Racing Style</div>
+    <div class="ftag">💎 Premium Quality</div>
+    <div class="ftag">🔧 Spare Parts</div>
+    <div class="ftag">🛞 Accessories</div>
+  </div>
+</div>
+
+<!-- ===== SLIDE 2 ===== -->
+<div class="slide">
+  <h2>Popular Motorcycle Parts</h2>
+  <div class="gallery">
+    <div class="card"><img src="images/Knalpot racing.jpeg"><p>Knalpot Racing</p></div>
+    <div class="card"><img src="images/Velg racing.jpeg"><p>Velg Racing</p></div>
+    <div class="card"><img src="images/Shockbreaker.jpeg"><p>Shockbreaker</p></div>
+    <div class="card"><img src="images/Ban Tubeless.jpeg"><p>Ban Tubeless</p></div>
+  </div>
+</div>
+
+<!-- ===== SLIDE 3 ===== -->
+<div class="slide">
+  <h2>Motor Modification Gallery</h2>
+  <div class="gallery">
+    <div class="card"><img src="images/Sport Style.jpeg"><p>Sport Style</p></div>
+    <div class="card"><img src="images/Touring Style.jpeg"><p>Touring Style</p></div>
+    <div class="card"><img src="images/Racing Style.jpeg"><p>Racing Style</p></div>
+  </div>
+</div>
+
+<!-- ===== SLIDE 4 ===== -->
+<div class="slide">
+  <h2>Motor Parts Information</h2>
+  <p style="color:#aaa;max-width:600px;margin:0 auto;">Komponen motor yang meningkatkan tampilan, kenyamanan, keamanan, dan performa kendaraan.</p>
+  <ul class="info-list">
+    <li><span class="dot"></span> Racing Exhaust — Suara garang, performa meningkat</li>
+    <li><span class="dot"></span> Alloy Wheels — Ringan, stylish, kuat</li>
+    <li><span class="dot"></span> Tubeless Tires — Anti kempes tiba-tiba</li>
+    <li><span class="dot"></span> Premium Shockbreaker — Handling lebih presisi</li>
+    <li><span class="dot"></span> LED Headlights — Terang, hemat daya</li>
+  </ul>
+  <p style="margin-top:20px;color:#ff3c00;font-size:16px;">⚠️ Gunakan spare part berkualitas untuk performa & keamanan maksimal.</p>
+</div>
+
+<!-- ===== SLIDE 5 ===== -->
+<div class="slide">
+  <h2>Motor Modification Video</h2>
+  <iframe
+    src="https://www.youtube.com/embed/B1lPua_JKKs"
+    title="Motor Modification Video"
+    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+    allowfullscreen>
+  </iframe>
+</div>
+
+<!-- ===== SLIDE 6 ===== -->
+<div class="slide">
+  <div class="thankyou-glow">🏍️ Thank You</div>
+  <p style="margin-top:20px;font-size:22px;color:#aaa;">Thanks For Watching</p>
+  <p style="margin-top:15px;color:#ff3c00;font-size:20px;">Ride Safe &bull; Ride Smart &bull; Ride With Style</p>
+  <div class="floating-tags" style="margin-top:40px;">
+    <div class="ftag" style="border-color:#00d4ff88;color:#00d4ff;">🏁 See You On The Road</div>
+    <div class="ftag" style="border-color:#00d4ff88;color:#00d4ff;">⚡ Keep Riding</div>
+  </div>
+</div>
+
+<!-- NAV -->
+<button class="nav-btn" id="prev" onclick="changeSlide(-1)">&#9664; Prev</button>
+<button class="nav-btn" id="next" onclick="changeSlide(1)">Next &#9654;</button>
+
+<script>
+/* ===== SLIDE LOGIC ===== */
+let index = 0;
+const slides = document.querySelectorAll(".slide");
+const counter = document.getElementById("slideCounter");
+
+function pad(n){return String(n).padStart(2,"0");}
+function showSlide(i){
+  slides.forEach(s=>s.classList.remove("active"));
+  slides[i].classList.add("active");
+  counter.textContent = pad(i+1)+" / "+pad(slides.length);
+}
+function changeSlide(step){
+  index = (index+step+slides.length)%slides.length;
+  showSlide(index);
+}
+
+/* ===== MUSIK ===== */
+const music = document.getElementById("bgMusic");
+const musicBtn = document.getElementById("musicBtn");
+let isPlaying = false;
+musicBtn.addEventListener("click",()=>{
+  if(isPlaying){
+    music.pause();music.currentTime=0;
+    musicBtn.innerHTML="🎵 OFF";
+    musicBtn.style.background="#00c853";
+    isPlaying=false;
+  }else{
+    music.play();
+    musicBtn.innerHTML="🔊 ON";
+    musicBtn.style.background="#ff3c00";
+    isPlaying=true;
+  }
+});
+
+/* ===== CURSOR ===== */
+const cur = document.getElementById("cursor");
+const ring = document.getElementById("cursorRing");
+let mx=0,my=0,rx=0,ry=0;
+
+document.addEventListener("mousemove",e=>{
+  mx=e.clientX;my=e.clientY;
+  cur.style.left=mx+"px";cur.style.top=my+"px";
+});
+
+(function animRing(){
+  rx+=(mx-rx)*.12;
+  ry+=(my-ry)*.12;
+  ring.style.left=rx+"px";ring.style.top=ry+"px";
+  requestAnimationFrame(animRing);
+})();
+
+/* ===== TRAIL EKOR ===== */
+const TRAIL_LEN = 12;
+const trails = [];
+for(let i=0;i<TRAIL_LEN;i++){
+  const d=document.createElement("div");
+  d.classList.add("trail");
+  const sz=Math.max(3,12-i);
+  d.style.cssText=`width:${sz}px;height:${sz}px;opacity:${(TRAIL_LEN-i)/TRAIL_LEN*0.35};`;
+  document.body.appendChild(d);
+  trails.push({el:d,x:0,y:0});
+}
+(function animTrail(){
+  let px=mx,py=my;
+  for(let i=0;i<trails.length;i++){
+    trails[i].x+=(px-trails[i].x)*0.35;
+    trails[i].y+=(py-trails[i].y)*0.35;
+    trails[i].el.style.left=trails[i].x+"px";
+    trails[i].el.style.top=trails[i].y+"px";
+    px=trails[i].x;py=trails[i].y;
+  }
+  requestAnimationFrame(animTrail);
+})();
+
+/* ===== SPARK KLIK ===== */
+const SPARK_COLORS=["#ff3c00","#00d4ff","#ff0066","#ffcc00","#00ff88"];
+document.addEventListener("click",e=>{
+  const count=12;
+  for(let i=0;i<count;i++){
+    const s=document.createElement("div");
+    s.classList.add("spark");
+    const angle=(Math.PI*2/count)*i;
+    const dist=30+Math.random()*40;
+    const size=4+Math.random()*6;
+    const col=SPARK_COLORS[Math.floor(Math.random()*SPARK_COLORS.length)];
+    s.style.cssText=`
+      left:${e.clientX}px;top:${e.clientY}px;
+      width:${size}px;height:${size}px;
+      background:${col};
+      box-shadow:0 0 8px ${col};
+      animation:sparkAnim .5s ease-out forwards;
+    `;
+    document.body.appendChild(s);
+    const tx=Math.cos(angle)*dist, ty=Math.sin(angle)*dist;
+    s.animate([
+      {transform:`translate(-50%,-50%) translate(0,0) scale(1)`,opacity:1},
+      {transform:`translate(-50%,-50%) translate(${tx}px,${ty}px) scale(0)`,opacity:0}
+    ],{duration:500,easing:"ease-out",fill:"forwards"});
+    setTimeout(()=>s.remove(),520);
+  }
+});
+
+/* ===== PARTICLE CANVAS ===== */
+const canvas = document.getElementById("particleCanvas");
+const ctx = canvas.getContext("2d");
+let W,H;
+
+function resize(){W=canvas.width=window.innerWidth;H=canvas.height=window.innerHeight;}
+resize();
+window.addEventListener("resize",resize);
+
+const particles=[];
+const PCOUNT=80;
+const COLORS_P=["#ff3c0066","#00d4ff44","#ff006633","#ffffff22"];
+
+for(let i=0;i<PCOUNT;i++){
+  particles.push({
+    x:Math.random()*W,
+    y:Math.random()*H,
+    r:Math.random()*2+0.5,
+    vx:(Math.random()-.5)*.4,
+    vy:(Math.random()-.5)*.4,
+    col:COLORS_P[Math.floor(Math.random()*COLORS_P.length)]
+  });
+}
+
+(function animParticles(){
+  ctx.clearRect(0,0,W,H);
+  for(const p of particles){
+    p.x+=p.vx;p.y+=p.vy;
+    if(p.x<0)p.x=W;if(p.x>W)p.x=0;
+    if(p.y<0)p.y=H;if(p.y>H)p.y=0;
+    ctx.beginPath();
+    ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+    ctx.fillStyle=p.col;
+    ctx.fill();
+  }
+  /* garis antar partikel dekat */
+  for(let i=0;i<particles.length;i++){
+    for(let j=i+1;j<particles.length;j++){
+      const dx=particles[i].x-particles[j].x;
+      const dy=particles[i].y-particles[j].y;
+      const dist=Math.sqrt(dx*dx+dy*dy);
+      if(dist<100){
+        ctx.beginPath();
+        ctx.strokeStyle=`rgba(0,212,255,${(1-dist/100)*.12})`;
+        ctx.lineWidth=.5;
+        ctx.moveTo(particles[i].x,particles[i].y);
+        ctx.lineTo(particles[j].x,particles[j].y);
+        ctx.stroke();
+      }
+    }
+  }
+  requestAnimationFrame(animParticles);
+})();
+</script>
+</body>
+</html>
