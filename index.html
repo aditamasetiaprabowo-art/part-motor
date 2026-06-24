@@ -1,0 +1,668 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Motor Parts Garage — Online Shop</title>
+<style>
+:root{
+  --accent:#ff3c00;--accent2:#ff6a00;
+  --bg:#0a0a0a;--bg2:#141414;--bg3:#1e1e1e;
+  --card:#181818;--border:rgba(255,60,0,.18);
+  --text:#fff;--muted:#888;--cyan:#00d4ff;
+}
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI',Arial,sans-serif;}
+body{background:var(--bg);color:var(--text);cursor:none;overflow-x:hidden;}
+
+/* ===== CURSOR ===== */
+#cur{position:fixed;width:14px;height:14px;border-radius:50%;background:var(--accent);
+  box-shadow:0 0 10px var(--accent);pointer-events:none;transform:translate(-50%,-50%);z-index:9999;transition:width .2s,height .2s;}
+#curR{position:fixed;width:34px;height:34px;border-radius:50%;border:1.5px solid rgba(255,60,0,.5);
+  pointer-events:none;transform:translate(-50%,-50%);z-index:9998;transition:all .18s;}
+.trail{position:fixed;border-radius:50%;pointer-events:none;transform:translate(-50%,-50%);z-index:9997;background:var(--accent);opacity:.3;}
+
+/* ===== SPARK ===== */
+.spark{position:fixed;pointer-events:none;z-index:9990;border-radius:50%;}
+
+/* ===== SCAN LINE ===== */
+body::after{content:"";position:fixed;inset:0;pointer-events:none;
+  background:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,.05) 3px,rgba(0,0,0,.05) 4px);z-index:8000;}
+
+/* ===== PARTICLE CANVAS ===== */
+#pCanvas{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none;}
+
+/* ===== HEADER ===== */
+header{
+  position:sticky;top:0;z-index:500;
+  background:rgba(10,10,10,.92);backdrop-filter:blur(12px);
+  border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;
+  padding:14px 32px;
+}
+.logo{display:flex;align-items:center;gap:10px;}
+.logo span{font-size:22px;font-weight:800;color:var(--accent);
+  text-shadow:0 0 14px var(--accent);letter-spacing:1px;}
+.logo sub{font-size:11px;color:var(--muted);margin-left:2px;}
+
+nav{display:flex;gap:6px;}
+.navLink{
+  padding:8px 18px;border-radius:20px;font-size:14px;font-weight:600;
+  cursor:none;border:1px solid transparent;transition:.3s;color:var(--muted);
+  background:transparent;
+}
+.navLink:hover,.navLink.active{color:#fff;border-color:var(--border);background:var(--bg3);}
+.navLink.active{color:var(--accent);}
+
+#cartBtn{
+  position:relative;padding:9px 20px;border-radius:20px;
+  background:var(--accent);color:#fff;border:none;font-size:14px;font-weight:700;
+  cursor:none;transition:.3s;box-shadow:0 0 14px rgba(255,60,0,.4);overflow:hidden;
+}
+#cartBtn:hover{background:var(--accent2);box-shadow:0 0 24px rgba(255,60,0,.6);}
+#cartCount{
+  position:absolute;top:-5px;right:-5px;
+  background:#ff0;color:#000;border-radius:50%;
+  width:20px;height:20px;font-size:11px;font-weight:900;
+  display:flex;align-items:center;justify-content:center;
+  display:none;
+}
+
+/* ===== HERO ===== */
+.hero{
+  position:relative;z-index:1;
+  padding:70px 32px 50px;text-align:center;
+  border-bottom:1px solid var(--border);
+  overflow:hidden;
+}
+.hero::before{
+  content:"";position:absolute;inset:0;
+  background:radial-gradient(ellipse 80% 60% at 50% 0%,rgba(255,60,0,.12),transparent 70%);
+  pointer-events:none;
+}
+.hero h1{
+  font-size:52px;font-weight:900;
+  background:linear-gradient(135deg,#fff 30%,var(--accent));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  line-height:1.1;margin-bottom:12px;
+}
+.hero p{font-size:18px;color:var(--muted);margin-bottom:28px;}
+.hero-badges{display:flex;justify-content:center;gap:12px;flex-wrap:wrap;}
+.badge{
+  padding:6px 16px;border-radius:20px;font-size:13px;font-weight:600;
+  border:1px solid rgba(255,60,0,.35);color:var(--accent);
+  background:rgba(255,60,0,.08);
+}
+
+/* ===== STATS BAR ===== */
+.stats{
+  display:flex;justify-content:center;gap:0;
+  border-bottom:1px solid var(--border);z-index:1;position:relative;
+}
+.stat{
+  flex:1;max-width:200px;padding:18px;text-align:center;
+  border-right:1px solid var(--border);
+}
+.stat:last-child{border-right:none;}
+.stat-num{font-size:26px;font-weight:800;color:var(--accent);}
+.stat-lbl{font-size:12px;color:var(--muted);margin-top:2px;}
+
+/* ===== FILTER BAR ===== */
+.filterBar{
+  position:sticky;top:65px;z-index:400;
+  background:rgba(10,10,10,.9);backdrop-filter:blur(8px);
+  border-bottom:1px solid var(--border);
+  display:flex;align-items:center;gap:10px;padding:12px 32px;
+  overflow-x:auto;
+}
+.filterBar::-webkit-scrollbar{height:0;}
+.fBtn{
+  padding:7px 18px;border-radius:20px;font-size:13px;font-weight:600;
+  border:1px solid var(--border);color:var(--muted);background:transparent;
+  cursor:none;transition:.3s;white-space:nowrap;flex-shrink:0;
+}
+.fBtn:hover{color:#fff;border-color:rgba(255,60,0,.5);}
+.fBtn.on{background:var(--accent);color:#fff;border-color:var(--accent);box-shadow:0 0 12px rgba(255,60,0,.4);}
+
+.searchWrap{margin-left:auto;flex-shrink:0;}
+#searchBox{
+  padding:7px 16px;border-radius:20px;font-size:13px;
+  border:1px solid var(--border);background:var(--bg3);color:#fff;
+  outline:none;width:200px;transition:.3s;
+}
+#searchBox:focus{border-color:var(--accent);box-shadow:0 0 10px rgba(255,60,0,.25);}
+
+/* ===== MAIN LAYOUT ===== */
+main{position:relative;z-index:1;padding:32px;}
+
+/* ===== PRODUCT GRID ===== */
+#productGrid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(240px,1fr));
+  gap:24px;
+}
+
+/* ===== PRODUCT CARD ===== */
+.pCard{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:16px;overflow:hidden;
+  transition:.4s;position:relative;cursor:none;
+}
+.pCard:hover{
+  transform:translateY(-8px);
+  box-shadow:0 0 30px rgba(255,60,0,.25),0 20px 40px rgba(0,0,0,.5);
+  border-color:rgba(255,60,0,.45);
+}
+.pImg{
+  width:100%;height:200px;object-fit:cover;display:block;
+  background:var(--bg3);
+  transition:.4s;
+}
+.pCard:hover .pImg{transform:scale(1.04);}
+.pImgWrap{overflow:hidden;position:relative;}
+.pBadge{
+  position:absolute;top:10px;left:10px;
+  padding:4px 10px;border-radius:10px;font-size:11px;font-weight:700;
+}
+.badge-new{background:#00e676;color:#000;}
+.badge-hot{background:var(--accent);color:#fff;}
+.badge-sale{background:#ffcc00;color:#000;}
+.badge-best{background:var(--cyan);color:#000;}
+
+.pBody{padding:16px;}
+.pCat{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;}
+.pName{font-size:16px;font-weight:700;color:#fff;margin-bottom:8px;line-height:1.3;}
+.pDesc{font-size:12px;color:var(--muted);margin-bottom:12px;line-height:1.5;}
+
+.pPriceRow{display:flex;align-items:center;gap:8px;margin-bottom:14px;}
+.pPrice{font-size:20px;font-weight:800;color:var(--accent);}
+.pOri{font-size:13px;color:var(--muted);text-decoration:line-through;}
+.pDisc{font-size:12px;font-weight:700;color:#00e676;background:rgba(0,230,118,.12);padding:2px 8px;border-radius:8px;}
+
+.pStars{font-size:12px;color:#ffcc00;margin-bottom:12px;}
+.pStars span{color:var(--muted);margin-left:4px;}
+
+.addBtn{
+  width:100%;padding:11px;border-radius:10px;
+  background:linear-gradient(135deg,var(--accent),var(--accent2));
+  color:#fff;border:none;font-size:14px;font-weight:700;
+  cursor:none;transition:.3s;overflow:hidden;position:relative;
+  box-shadow:0 4px 15px rgba(255,60,0,.3);
+}
+.addBtn:hover{box-shadow:0 4px 25px rgba(255,60,0,.6);filter:brightness(1.1);}
+.addBtn:active{transform:scale(.97);}
+
+/* ===== RIPPLE ===== */
+.ripple{position:absolute;border-radius:50%;background:rgba(255,255,255,.3);
+  transform:scale(0);animation:rippleA .5s linear;pointer-events:none;}
+@keyframes rippleA{to{transform:scale(4);opacity:0;}}
+
+/* ===== CART PANEL ===== */
+#cartPanel{
+  position:fixed;top:0;right:-420px;
+  width:380px;height:100vh;
+  background:var(--bg2);border-left:1px solid var(--border);
+  z-index:2000;transition:.4s cubic-bezier(.4,0,.2,1);
+  display:flex;flex-direction:column;
+  box-shadow:-10px 0 40px rgba(0,0,0,.6);
+}
+#cartPanel.open{right:0;}
+.cartHead{
+  padding:20px 24px;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;
+}
+.cartHead h3{font-size:18px;font-weight:800;color:var(--accent);}
+#closeCart{
+  background:var(--bg3);border:1px solid var(--border);color:#fff;
+  width:32px;height:32px;border-radius:50%;cursor:none;font-size:16px;
+  display:flex;align-items:center;justify-content:center;transition:.3s;
+}
+#closeCart:hover{background:var(--accent);border-color:var(--accent);}
+#cartItems{flex:1;overflow-y:auto;padding:16px 24px;}
+#cartItems::-webkit-scrollbar{width:3px;}
+#cartItems::-webkit-scrollbar-thumb{background:var(--accent);border-radius:3px;}
+.emptyCart{text-align:center;padding:60px 0;color:var(--muted);}
+.emptyCart div{font-size:48px;margin-bottom:12px;}
+
+.cItem{
+  display:flex;gap:12px;padding:12px 0;
+  border-bottom:1px solid rgba(255,255,255,.06);
+}
+.cItemImg{width:64px;height:64px;object-fit:cover;border-radius:8px;background:var(--bg3);}
+.cItemInfo{flex:1;}
+.cItemName{font-size:13px;font-weight:600;margin-bottom:4px;}
+.cItemPrice{font-size:14px;font-weight:800;color:var(--accent);}
+.cItemQty{display:flex;align-items:center;gap:8px;margin-top:6px;}
+.qBtn{
+  width:26px;height:26px;border-radius:50%;border:1px solid var(--border);
+  background:var(--bg3);color:#fff;font-size:14px;cursor:none;
+  display:flex;align-items:center;justify-content:center;transition:.3s;
+}
+.qBtn:hover{background:var(--accent);border-color:var(--accent);}
+.qNum{font-size:14px;font-weight:700;min-width:20px;text-align:center;}
+.delBtn{background:none;border:none;color:var(--muted);cursor:none;font-size:16px;margin-left:auto;transition:.3s;}
+.delBtn:hover{color:#ff4444;}
+
+.cartFoot{padding:16px 24px;border-top:1px solid var(--border);}
+.cartTotal{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;}
+.cartTotal span:first-child{color:var(--muted);font-size:14px;}
+.cartTotal strong{font-size:22px;color:var(--accent);font-weight:900;}
+.checkoutBtn{
+  width:100%;padding:14px;border-radius:12px;
+  background:linear-gradient(135deg,var(--accent),var(--accent2));
+  color:#fff;border:none;font-size:16px;font-weight:800;
+  cursor:none;transition:.3s;box-shadow:0 4px 20px rgba(255,60,0,.4);
+}
+.checkoutBtn:hover{box-shadow:0 4px 30px rgba(255,60,0,.7);filter:brightness(1.1);}
+.clearBtn{
+  width:100%;padding:10px;border-radius:12px;margin-top:8px;
+  background:transparent;color:var(--muted);border:1px solid var(--border);
+  font-size:13px;cursor:none;transition:.3s;
+}
+.clearBtn:hover{color:#ff4444;border-color:#ff4444;}
+
+/* ===== TOAST ===== */
+#toast{
+  position:fixed;bottom:30px;left:50%;transform:translateX(-50%) translateY(20px);
+  background:var(--bg3);border:1px solid var(--border);
+  color:#fff;padding:12px 24px;border-radius:30px;
+  font-size:14px;font-weight:600;z-index:6000;
+  opacity:0;transition:.3s;pointer-events:none;white-space:nowrap;
+  box-shadow:0 4px 20px rgba(0,0,0,.5);
+}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+/* ===== OVERLAY ===== */
+#overlay{
+  position:fixed;inset:0;background:rgba(0,0,0,.5);
+  z-index:1900;opacity:0;pointer-events:none;transition:.3s;
+  backdrop-filter:blur(3px);
+}
+#overlay.show{opacity:1;pointer-events:all;}
+
+/* ===== FOOTER ===== */
+footer{
+  position:relative;z-index:1;
+  border-top:1px solid var(--border);padding:32px;text-align:center;
+  color:var(--muted);font-size:13px;
+}
+footer strong{color:var(--accent);}
+
+/* ===== NO RESULTS ===== */
+#noResult{
+  display:none;text-align:center;padding:80px;color:var(--muted);
+  grid-column:1/-1;
+}
+#noResult div{font-size:48px;margin-bottom:12px;}
+</style>
+</head>
+<body>
+
+<canvas id="pCanvas"></canvas>
+<div id="cur"></div><div id="curR"></div>
+<div id="overlay" onclick="closeCart()"></div>
+<div id="toast"></div>
+
+<!-- ===== HEADER ===== -->
+<header>
+  <div class="logo">
+    <span>🏍️ Motor Parts Garage</span>
+  </div>
+  <nav>
+    <button class="navLink active" onclick="filterCat('all')">Semua</button>
+    <button class="navLink" onclick="filterCat('knalpot')">Knalpot</button>
+    <button class="navLink" onclick="filterCat('velg')">Velg</button>
+    <button class="navLink" onclick="filterCat('suspensi')">Suspensi</button>
+    <button class="navLink" onclick="filterCat('ban')">Ban</button>
+    <button class="navLink" onclick="filterCat('mesin')">Mesin</button>
+  </nav>
+  <button id="cartBtn" onclick="openCart()">
+    🛒 Keranjang
+    <div id="cartCount">0</div>
+  </button>
+</header>
+
+<!-- ===== HERO ===== -->
+<section class="hero">
+  <h1>🏍️ Motor Parts Garage</h1>
+  <p>Spare part & aksesoris motor terbaik • Harga terjangkau • Kualitas premium</p>
+  <div class="hero-badges">
+    <span class="badge">⚡ Gratis Ongkir</span>
+    <span class="badge">🔒 Garansi Resmi</span>
+    <span class="badge">🚀 Pengiriman Cepat</span>
+    <span class="badge">💯 Original Parts</span>
+  </div>
+</section>
+
+<!-- ===== STATS ===== -->
+<div class="stats">
+  <div class="stat"><div class="stat-num">500+</div><div class="stat-lbl">Produk Tersedia</div></div>
+  <div class="stat"><div class="stat-num">12K+</div><div class="stat-lbl">Pelanggan Puas</div></div>
+  <div class="stat"><div class="stat-num">4.9★</div><div class="stat-lbl">Rating Toko</div></div>
+  <div class="stat"><div class="stat-num">24/7</div><div class="stat-lbl">Customer Support</div></div>
+</div>
+
+<!-- ===== FILTER BAR ===== -->
+<div class="filterBar">
+  <button class="fBtn on" onclick="setSort('default',this)">Semua</button>
+  <button class="fBtn" onclick="setSort('price-asc',this)">Harga ↑</button>
+  <button class="fBtn" onclick="setSort('price-desc',this)">Harga ↓</button>
+  <button class="fBtn" onclick="setSort('rating',this)">Rating Terbaik</button>
+  <button class="fBtn" onclick="setSort('discount',this)">Diskon Terbesar</button>
+  <div class="searchWrap">
+    <input id="searchBox" type="text" placeholder="🔍 Cari produk..." oninput="renderProducts()">
+  </div>
+</div>
+
+<!-- ===== MAIN ===== -->
+<main>
+  <div id="productGrid">
+    <div id="noResult"><div>😔</div>Produk tidak ditemukan</div>
+  </div>
+</main>
+
+<!-- ===== CART PANEL ===== -->
+<div id="cartPanel">
+  <div class="cartHead">
+    <h3>🛒 Keranjang Belanja</h3>
+    <button id="closeCart" onclick="closeCart()">✕</button>
+  </div>
+  <div id="cartItems">
+    <div class="emptyCart"><div>🛒</div>Keranjang masih kosong</div>
+  </div>
+  <div class="cartFoot">
+    <div class="cartTotal">
+      <span>Total Belanja</span>
+      <strong id="totalPrice">Rp 0</strong>
+    </div>
+    <button class="checkoutBtn" onclick="checkout()">⚡ Checkout Sekarang</button>
+    <button class="clearBtn" onclick="clearCart()">🗑 Kosongkan Keranjang</button>
+  </div>
+</div>
+
+<!-- ===== FOOTER ===== -->
+<footer>
+  <strong>🏍️ Motor Parts Garage</strong> — Toko Spare Part Motor Terpercaya<br>
+  <span style="margin-top:6px;display:block;">📍 Ungaran, Jawa Tengah &nbsp;|&nbsp; 📱 0812-XXXX-XXXX &nbsp;|&nbsp; ✉️ info@motorpartsgarage.id</span>
+</footer>
+
+<script>
+/* ==================== PRODUCTS DATA ==================== */
+const PRODUCTS = [
+  {id:1,cat:"knalpot",name:"Knalpot Racing R9 Full System",desc:"Bahan stainless steel premium, booming bass, bertenaga di semua RPM.",img:"images/Knalpot racing.jpeg",price:1250000,ori:1800000,rating:4.9,reviews:312,badge:"hot",tags:["knalpot","racing","r9"]},
+  {id:2,cat:"knalpot",name:"Knalpot Yoshimura Slip-On",desc:"Desain sporty, ringan, suara khas yoshimura, cocok harian & trek.",img:"images/Knalpot racing.jpeg",price:850000,ori:1100000,rating:4.8,reviews:198,badge:"sale",tags:["knalpot","yoshimura","slip-on"]},
+  {id:3,cat:"knalpot",name:"Knalpot HRP Carbon Series",desc:"Ujung carbon fiber asli, ringan 40% dari knalpot standar pabrik.",img:"images/Knalpot racing.jpeg",price:1450000,ori:1450000,rating:4.7,reviews:87,badge:"new",tags:["knalpot","carbon","hrp"]},
+
+  {id:4,cat:"velg",name:"Velg Racing TDR Spoke 17 Inch",desc:"Velg jari-jari aluminium alloy, finishing chrome glossy, kuat & ringan.",img:"images/Velg racing.jpeg",price:1750000,ori:2100000,rating:4.9,reviews:421,badge:"best",tags:["velg","tdr","spoke","17"]},
+  {id:5,cat:"velg",name:"Velg Takasago Excel Rim",desc:"Standar internasional, dipakai di motocross & trail profesional.",img:"images/Velg racing.jpeg",price:980000,ori:1200000,rating:4.7,reviews:154,badge:"sale",tags:["velg","takasago","excel"]},
+  {id:6,cat:"velg",name:"Velg CNC Forged Magnesium",desc:"Material forged magnesium, super ringan, performa handling meningkat drastis.",img:"images/Velg racing.jpeg",price:1950000,ori:1950000,rating:4.8,reviews:63,badge:"new",tags:["velg","cnc","magnesium"]},
+
+  {id:7,cat:"suspensi",name:"Shockbreaker YSS G-Sport Tabung",desc:"Dual tabung, adjustable preload, rebounding sempurna di segala medan.",img:"images/Shockbreaker.jpeg",price:1350000,ori:1700000,rating:4.9,reviews:287,badge:"hot",tags:["shock","suspensi","yss","tabung"]},
+  {id:8,cat:"suspensi",name:"Shockbreaker Ohlins STX36",desc:"Merek legendaris dari Swedia, digunakan tim MotoGP, feel premium.",img:"images/Shockbreaker.jpeg",price:1900000,ori:2000000,rating:5.0,reviews:445,badge:"best",tags:["shock","suspensi","ohlins"]},
+  {id:9,cat:"suspensi",name:"Shockbreaker KTC Mono Shock",desc:"Desain monosok sporty, peredam kejut optimal, cocok harian & touring.",img:"images/Shockbreaker.jpeg",price:750000,ori:950000,rating:4.6,reviews:102,badge:"sale",tags:["shock","suspensi","ktc","mono"]},
+
+  {id:10,cat:"ban",name:"Ban Tubeless IRC Road Winner 90/80-17",desc:"Compound khusus basah & kering, grip optimal, awet hingga 20.000 km.",img:"images/Ban Tubeless.jpeg",price:520000,ori:650000,rating:4.8,reviews:534,badge:"hot",tags:["ban","tubeless","irc","road"]},
+  {id:11,cat:"ban",name:"Ban Battlax Bridgestone BT-46",desc:"Teknologi Japonese, handling presisi, cocok untuk harian performa tinggi.",img:"images/Ban Tubeless.jpeg",price:780000,ori:900000,rating:4.9,reviews:312,badge:"best",tags:["ban","tubeless","bridgestone","battlax"]},
+  {id:12,cat:"ban",name:"Ban Corsa R46 Sport Compound",desc:"Compound lunak khusus trek, grip luar biasa, rekomendasi road race.",img:"images/Ban Tubeless.jpeg",price:650000,ori:800000,rating:4.7,reviews:189,badge:"sale",tags:["ban","tubeless","corsa","sport"]},
+
+  {id:13,cat:"mesin",name:"Karburator Keihin PE28 Racing",desc:"Upgrade karbu PE28 asli Keihin Jepang, throttle responsif, irit BBM.",img:"images/Knalpot racing.jpeg",price:890000,ori:1100000,rating:4.8,reviews:276,badge:"hot",tags:["mesin","karbu","keihin","pe28"]},
+  {id:14,cat:"mesin",name:"Filter Udara DNA Racing Air Filter",desc:"Aliran udara +35%, material multi-layer cotton, washable & reusable.",img:"images/Shockbreaker.jpeg",price:620000,ori:750000,rating:4.7,reviews:143,badge:"sale",tags:["mesin","filter","udara","dna"]},
+  {id:15,cat:"mesin",name:"CDI BRT Hyperband Racing",desc:"Limiter RPM dilepas, pengapian lebih tajam, akselerasi meningkat signifikan.",img:"images/Velg racing.jpeg",price:580000,ori:700000,rating:4.6,reviews:98,badge:"new",tags:["mesin","cdi","brt","hyperband"]},
+  {id:16,cat:"mesin",name:"Koil Dytec Hi-Power Racing Coil",desc:"Tegangan output 3x lebih tinggi, pembakaran sempurna, busi lebih awet.",img:"images/Ban Tubeless.jpeg",price:510000,ori:600000,rating:4.5,reviews:77,badge:"new",tags:["mesin","koil","dytec","racing"]},
+];
+
+/* ==================== STATE ==================== */
+let cart = {};
+let currentCat = "all";
+let currentSort = "default";
+
+/* ==================== FORMAT CURRENCY ==================== */
+function fmt(n){return "Rp "+n.toLocaleString("id-ID");}
+
+/* ==================== STARS ==================== */
+function stars(r){
+  const full=Math.floor(r), half=r%1>=.5?1:0;
+  return "★".repeat(full)+(half?"½":"")+"☆".repeat(5-full-half);
+}
+
+/* ==================== DISCOUNT ==================== */
+function disc(p,o){return o>p?Math.round((1-p/o)*100):0;}
+
+/* ==================== RENDER PRODUCTS ==================== */
+function renderProducts(){
+  const grid = document.getElementById("productGrid");
+  const q = document.getElementById("searchBox").value.toLowerCase();
+
+  let list = PRODUCTS.filter(p=>{
+    const catOk = currentCat==="all"||p.cat===currentCat;
+    const searchOk = !q||p.name.toLowerCase().includes(q)||p.tags.some(t=>t.includes(q));
+    return catOk&&searchOk;
+  });
+
+  if(currentSort==="price-asc") list.sort((a,b)=>a.price-b.price);
+  else if(currentSort==="price-desc") list.sort((a,b)=>b.price-a.price);
+  else if(currentSort==="rating") list.sort((a,b)=>b.rating-a.rating);
+  else if(currentSort==="discount") list.sort((a,b)=>disc(b.price,b.ori)-disc(a.price,a.ori));
+
+  const nr = document.getElementById("noResult");
+  if(list.length===0){nr.style.display="block";}else{nr.style.display="none";}
+
+  // remove old cards
+  grid.querySelectorAll(".pCard").forEach(c=>c.remove());
+
+  list.forEach(p=>{
+    const d = disc(p.price,p.ori);
+    const badgeHTML = p.badge?`<span class="pBadge badge-${p.badge}">${
+      p.badge==="hot"?"🔥 Hot":p.badge==="new"?"🆕 New":p.badge==="sale"?"💸 Sale":"⭐ Best"
+    }</span>`:"";
+
+    const card = document.createElement("div");
+    card.className="pCard";
+    card.innerHTML=`
+      <div class="pImgWrap">
+        <img class="pImg" src="${p.img}" alt="${p.name}" onerror="this.src='';this.style.background='#1e1e1e'">
+        ${badgeHTML}
+      </div>
+      <div class="pBody">
+        <div class="pCat">${p.cat.toUpperCase()}</div>
+        <div class="pName">${p.name}</div>
+        <div class="pDesc">${p.desc}</div>
+        <div class="pStars">${stars(p.rating)}<span>(${p.reviews} ulasan)</span></div>
+        <div class="pPriceRow">
+          <span class="pPrice">${fmt(p.price)}</span>
+          ${p.ori>p.price?`<span class="pOri">${fmt(p.ori)}</span><span class="pDisc">-${d}%</span>`:""}
+        </div>
+        <button class="addBtn" onclick="addToCart(${p.id})">🛒 Tambah ke Keranjang</button>
+      </div>
+    `;
+    grid.appendChild(card);
+  });
+}
+
+/* ==================== FILTER / SORT ==================== */
+function filterCat(cat){
+  currentCat = cat;
+  document.querySelectorAll("nav .navLink").forEach(b=>b.classList.remove("active"));
+  event.target.classList.add("active");
+  renderProducts();
+}
+function setSort(s,btn){
+  currentSort=s;
+  document.querySelectorAll(".fBtn").forEach(b=>b.classList.remove("on"));
+  btn.classList.add("on");
+  renderProducts();
+}
+
+/* ==================== CART ==================== */
+function addToCart(id){
+  const p = PRODUCTS.find(x=>x.id===id);
+  if(!p) return;
+  if(cart[id]){cart[id].qty++;}
+  else{cart[id]={...p,qty:1};}
+  updateCartUI();
+  showToast("✅ "+p.name.slice(0,28)+"... ditambahkan!");
+  playClick();
+}
+
+function removeFromCart(id){
+  delete cart[id];
+  updateCartUI();
+  renderCart();
+}
+
+function changeQty(id,delta){
+  if(!cart[id]) return;
+  cart[id].qty+=delta;
+  if(cart[id].qty<=0) delete cart[id];
+  updateCartUI();
+  renderCart();
+}
+
+function clearCart(){
+  cart={};
+  updateCartUI();
+  renderCart();
+  showToast("🗑 Keranjang dikosongkan");
+}
+
+function updateCartUI(){
+  const total = Object.values(cart).reduce((s,i)=>s+i.qty,0);
+  const cc = document.getElementById("cartCount");
+  if(total>0){cc.style.display="flex";cc.textContent=total;}
+  else{cc.style.display="none";}
+}
+
+function renderCart(){
+  const el = document.getElementById("cartItems");
+  const items = Object.values(cart);
+  if(items.length===0){
+    el.innerHTML='<div class="emptyCart"><div>🛒</div>Keranjang masih kosong</div>';
+    document.getElementById("totalPrice").textContent="Rp 0";
+    return;
+  }
+  el.innerHTML="";
+  let total=0;
+  items.forEach(item=>{
+    total+=item.price*item.qty;
+    const div=document.createElement("div");
+    div.className="cItem";
+    div.innerHTML=`
+      <img class="cItemImg" src="${item.img}" onerror="this.style.background='#1e1e1e'">
+      <div class="cItemInfo">
+        <div class="cItemName">${item.name.slice(0,32)}...</div>
+        <div class="cItemPrice">${fmt(item.price)}</div>
+        <div class="cItemQty">
+          <button class="qBtn" onclick="changeQty(${item.id},-1)">−</button>
+          <span class="qNum">${item.qty}</span>
+          <button class="qBtn" onclick="changeQty(${item.id},1)">+</button>
+          <button class="delBtn" onclick="removeFromCart(${item.id})">🗑</button>
+        </div>
+      </div>
+    `;
+    el.appendChild(div);
+  });
+  document.getElementById("totalPrice").textContent=fmt(total);
+}
+
+function openCart(){
+  document.getElementById("cartPanel").classList.add("open");
+  document.getElementById("overlay").classList.add("show");
+  renderCart();
+  playClick();
+}
+function closeCart(){
+  document.getElementById("cartPanel").classList.remove("open");
+  document.getElementById("overlay").classList.remove("show");
+}
+
+function checkout(){
+  if(Object.keys(cart).length===0){showToast("⚠️ Keranjang masih kosong!");return;}
+  const total=Object.values(cart).reduce((s,i)=>s+i.price*i.qty,0);
+  showToast("🎉 Pesanan "+fmt(total)+" berhasil dibuat!");
+  cart={};updateCartUI();renderCart();closeCart();
+}
+
+/* ==================== TOAST ==================== */
+let toastTimer;
+function showToast(msg){
+  const t=document.getElementById("toast");
+  t.textContent=msg;t.classList.add("show");
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(()=>t.classList.remove("show"),2500);
+}
+
+/* ==================== SOUND ==================== */
+let audioCtx;
+function getACtx(){if(!audioCtx)audioCtx=new(window.AudioContext||window.webkitAudioContext)();return audioCtx;}
+function playClick(){
+  const c=getACtx(),o=c.createOscillator(),g=c.createGain();
+  o.connect(g);g.connect(c.destination);
+  o.type="sine";o.frequency.setValueAtTime(700,c.currentTime);
+  o.frequency.exponentialRampToValueAtTime(300,c.currentTime+.1);
+  g.gain.setValueAtTime(.2,c.currentTime);g.gain.exponentialRampToValueAtTime(.001,c.currentTime+.1);
+  o.start(c.currentTime);o.stop(c.currentTime+.1);
+}
+
+/* ==================== RIPPLE ==================== */
+document.addEventListener("click",function(e){
+  const btn=e.target.closest("button,.addBtn");
+  if(!btn) return;
+  const r=document.createElement("div");r.className="ripple";
+  const rect=btn.getBoundingClientRect();
+  const size=Math.max(rect.width,rect.height)*2;
+  r.style.cssText=`width:${size}px;height:${size}px;left:${e.clientX-rect.left-size/2}px;top:${e.clientY-rect.top-size/2}px;`;
+  btn.appendChild(r);r.addEventListener("animationend",()=>r.remove());
+});
+
+/* ==================== CURSOR ==================== */
+const cur=document.getElementById("cur"),curR=document.getElementById("curR");
+let mx=0,my=0,rx=0,ry=0;
+document.addEventListener("mousemove",e=>{mx=e.clientX;my=e.clientY;cur.style.left=mx+"px";cur.style.top=my+"px";});
+(function aR(){rx+=(mx-rx)*.12;ry+=(my-ry)*.12;curR.style.left=rx+"px";curR.style.top=ry+"px";requestAnimationFrame(aR);})();
+
+/* ==================== TRAIL ==================== */
+const TL=10,trails=[];
+for(let i=0;i<TL;i++){
+  const d=document.createElement("div");d.className="trail";
+  const sz=Math.max(3,10-i);
+  d.style.cssText=`width:${sz}px;height:${sz}px;opacity:${(TL-i)/TL*.3};`;
+  document.body.appendChild(d);trails.push({el:d,x:0,y:0});
+}
+(function aT(){let px=mx,py=my;
+  for(let i=0;i<trails.length;i++){
+    trails[i].x+=(px-trails[i].x)*.35;trails[i].y+=(py-trails[i].y)*.35;
+    trails[i].el.style.left=trails[i].x+"px";trails[i].el.style.top=trails[i].y+"px";
+    px=trails[i].x;py=trails[i].y;
+  }requestAnimationFrame(aT);
+})();
+
+/* ==================== SPARK ==================== */
+const SC=["#ff3c00","#00d4ff","#ff0066","#ffcc00","#00ff88"];
+document.addEventListener("click",e=>{
+  for(let i=0;i<10;i++){
+    const s=document.createElement("div");s.className="spark";
+    const angle=Math.PI*2/10*i,dist=25+Math.random()*35,size=3+Math.random()*5;
+    const col=SC[Math.floor(Math.random()*SC.length)];
+    s.style.cssText=`left:${e.clientX}px;top:${e.clientY}px;width:${size}px;height:${size}px;background:${col};box-shadow:0 0 6px ${col};position:fixed;border-radius:50%;pointer-events:none;`;
+    document.body.appendChild(s);
+    s.animate([{transform:`translate(-50%,-50%) translate(0,0) scale(1)`,opacity:1},{transform:`translate(-50%,-50%) translate(${Math.cos(angle)*dist}px,${Math.sin(angle)*dist}px) scale(0)`,opacity:0}],{duration:450,easing:"ease-out",fill:"forwards"});
+    setTimeout(()=>s.remove(),470);
+  }
+});
+
+/* ==================== PARTICLES ==================== */
+const cv=document.getElementById("pCanvas"),pc=cv.getContext("2d");let W,H;
+function rsz(){W=cv.width=window.innerWidth;H=cv.height=window.innerHeight;}rsz();window.addEventListener("resize",rsz);
+const pts=[];for(let i=0;i<60;i++)pts.push({x:Math.random()*9999,y:Math.random()*9999,r:Math.random()*1.5+.5,vx:(Math.random()-.5)*.3,vy:(Math.random()-.5)*.3,c:["#ff3c0055","#00d4ff33","#ffffff18"][Math.floor(Math.random()*3)]});
+pts.forEach(p=>{p.x=Math.random()*W;p.y=Math.random()*H;});
+(function aP(){
+  pc.clearRect(0,0,W,H);
+  for(const p of pts){p.x+=p.vx;p.y+=p.vy;if(p.x<0)p.x=W;if(p.x>W)p.x=0;if(p.y<0)p.y=H;if(p.y>H)p.y=0;pc.beginPath();pc.arc(p.x,p.y,p.r,0,Math.PI*2);pc.fillStyle=p.c;pc.fill();}
+  for(let i=0;i<pts.length;i++)for(let j=i+1;j<pts.length;j++){const dx=pts[i].x-pts[j].x,dy=pts[i].y-pts[j].y,d=Math.sqrt(dx*dx+dy*dy);if(d<90){pc.beginPath();pc.strokeStyle=`rgba(0,212,255,${(1-d/90)*.1})`;pc.lineWidth=.4;pc.moveTo(pts[i].x,pts[i].y);pc.lineTo(pts[j].x,pts[j].y);pc.stroke();}}
+  requestAnimationFrame(aP);
+})();
+
+/* ==================== INIT ==================== */
+renderProducts();
+</script>
+</body>
+</html>
